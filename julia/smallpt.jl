@@ -3,24 +3,24 @@
 # author: yuanyeh
 
 type Ray
-    o::Array
-    d::Array
+    o::Array{Float64}
+    d::Array{Float64}
 end
 
 const (DIFF, SPEC, REFR) = (1, 2, 3)
 
 type Sphere
-    p::Array       # position
-    e::Array       # emission
-    c::Array       # color
-    cc::Array
-    rad::Float64   # radius
-    sqRad::Float64 # square of radius
+    p::Array{Float64}       # position
+    e::Array{Float64}       # emission
+    c::Array{Float64}       # color
+    cc::Array{Float64}
+    rad::Float64            # radius
+    sqRad::Float64          # square of radius
     maxC::Float64
-    refl::Int      # reflection type (DIFFuse, SPECular, REFRactive)
+    refl::Int               # reflection type (DIFFuse, SPECular, REFRactive)
 end
 
-function newSphere(rad::Float64, p::Array, e::Array, c::Array, refl::Int)
+function newSphere(rad::Float64, p::Array{Float64}, e::Array{Float64}, c::Array{Float64}, refl::Int)
     sqRad = rad * rad
     maxC = c[1] > c[2] && c[2] > c[3] ? c[1] : c[2] > c[3] ? c[2] : c[3]
     return Sphere(p, e, c, c * (1. / maxC), rad, sqRad, maxC, refl)
