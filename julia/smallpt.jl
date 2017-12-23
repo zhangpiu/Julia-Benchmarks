@@ -61,7 +61,7 @@ const lite = newSphere(600., [50., 681.6-.27, 81.6],   [12., 12., 12.], [0., 0.,
 const spheres = [left rght back frnt botm top mirr glas lite]
 
 function clip(x::Float64)
-    return x < 0 ? 0 : x > 1 ? 1 : x
+    return max(min(x,one(x)),zero(x))
 end
 
 function toInt(x::Float64)
