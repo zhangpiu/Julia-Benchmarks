@@ -7,7 +7,7 @@ type Ray
     d::Array
 end
 
-(DIFF, SPEC, REFR) = (1, 2, 3)
+const (DIFF, SPEC, REFR) = (1, 2, 3)
 
 type Sphere
     p::Array       # position
@@ -48,17 +48,17 @@ function intersectSphere(s::Sphere, r::Ray)
     end
 end
 
-left = newSphere(1e5,  [1e5+1, 40.8, 81.6],      [0., 0., 0.],    [.75, .25, .25],    DIFF)
-rght = newSphere(1e5,  [-1e5+99., 40.8, 81.6],   [0., 0., 0.],    [.25, .25, .75],    DIFF)
-back = newSphere(1e5,  [50., 40.8, 1e5],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
-frnt = newSphere(1e5,  [50., 40.8, -1e5+170.],   [0., 0., 0.],    [0., 0., 0.],       DIFF)
-botm = newSphere(1e5,  [50., 1e5, 81.6],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
-top  = newSphere(1e5,  [50., -1e5+81.6, 81.6],   [0., 0., 0.],    [.75, .75, .75],    DIFF)
-mirr = newSphere(16.5, [27., 16.5, 47.],         [0., 0., 0.],    [1., 1., 1.]*.999,  SPEC)
-glas = newSphere(16.5, [73., 16.5, 78.],         [0., 0., 0.],    [1., 1., 1.]*.999,  REFR)
-lite = newSphere(600., [50., 681.6-.27, 81.6],   [12., 12., 12.], [0., 0., 0.],       DIFF)
+const left = newSphere(1e5,  [1e5+1, 40.8, 81.6],      [0., 0., 0.],    [.75, .25, .25],    DIFF)
+const rght = newSphere(1e5,  [-1e5+99., 40.8, 81.6],   [0., 0., 0.],    [.25, .25, .75],    DIFF)
+const back = newSphere(1e5,  [50., 40.8, 1e5],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
+const frnt = newSphere(1e5,  [50., 40.8, -1e5+170.],   [0., 0., 0.],    [0., 0., 0.],       DIFF)
+const botm = newSphere(1e5,  [50., 1e5, 81.6],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
+const top  = newSphere(1e5,  [50., -1e5+81.6, 81.6],   [0., 0., 0.],    [.75, .75, .75],    DIFF)
+const mirr = newSphere(16.5, [27., 16.5, 47.],         [0., 0., 0.],    [1., 1., 1.]*.999,  SPEC)
+const glas = newSphere(16.5, [73., 16.5, 78.],         [0., 0., 0.],    [1., 1., 1.]*.999,  REFR)
+const lite = newSphere(600., [50., 681.6-.27, 81.6],   [12., 12., 12.], [0., 0., 0.],       DIFF)
 
-spheres = [left rght back frnt botm top mirr glas lite]
+const spheres = [left rght back frnt botm top mirr glas lite]
 
 function clip(x::Float64)
     return x < 0 ? 0 : x > 1 ? 1 : x
