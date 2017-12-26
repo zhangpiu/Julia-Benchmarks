@@ -2,36 +2,68 @@
 # coding: utf-8
 # author: yuanyeh
 
+import Base.+
+import Base.-
+import Base.*
+import Base.%
+import Base.^
+import Base.norm
+import Base.zero
+
+type Vec
+    x::Float64
+    y::Float64
+    z::Float64
+end
+
+const ZERO  = Vec(0., 0., 0.)
+const XAXIS = Vec(1., 0., 0.)
+const YAXIS = Vec(0., 1., 0.)
+const ZAXIS = Vec(0., 0., 1.)
+
++(a::Vec, b::Vec)     = Vec(a.x + b.x, a.y + b.y, a.z + b.z)
+-(a::Vec, b::Vec)     = Vec(a.x - b.x, a.y - b.y, a.z - b.z)
+*(a::Vec, b::Vec)     = Vec(a.x * b.x, a.y * b.y, a.z * b.z)
+*(a::Vec, b::Float64) = Vec(a.x * b, a.y * b, a.z * b)
+*(a::Float64, b::Vec) = Vec(a * b.x, a * b.y, a * b.z)
+# dot
+%(a::Vec, b::Vec)     = a.x * b.x + a.y * b.y + a.z * b.z
+# cross
+^(a::Vec, b::Vec)     = Vec(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
+zero(a::Vec) = Vec(0., 0., 0.)
+norm(a::Vec) = a * (1.0 / sqrt(a.x * a.x + a.y * a.y + a.z * a.z))
+
 type Ray
-    o::Array{Float64}
-    d::Array{Float64}
+    o::Vec
+    d::Vec
 end
 
 const (DIFF, SPEC, REFR) = (1, 2, 3)
 
+
 type Sphere
-    p::Array{Float64}       # position
-    e::Array{Float64}       # emission
-    c::Array{Float64}       # color
-    cc::Array{Float64}
-    rad::Float64            # radius
-    sqRad::Float64          # square of radius
+    p::Vec           # position
+    e::Vec           # emission
+    c::Vec           # color
+    cc::Vec
+    rad::Float64     # radius
+    sqRad::Float64   # square of radius
     maxC::Float64
-    refl::Int               # reflection type (DIFFuse, SPECular, REFRactive)
+    refl::Int        # reflection type (DIFFuse, SPECular, REFRactive)
 end
 
-function newSphere(rad::Float64, p::Array{Float64}, e::Array{Float64}, c::Array{Float64}, refl::Int)
+function newSphere(rad::Float64, p::Vec, e::Vec, c::Vec, refl::Int)
     sqRad = rad * rad
-    maxC = c[1] > c[2] && c[2] > c[3] ? c[1] : c[2] > c[3] ? c[2] : c[3]
+    maxC = c.x > c.y && c.y > c.z ? c.x : c.y > c.z ? c.y : c.z
     return Sphere(p, e, c, c * (1. / maxC), rad, sqRad, maxC, refl)
 end
 
 function intersectSphere(s::Sphere, r::Ray)
     # Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
     op = s.p - r.o
-    b = dot(op, r.d)
+    b = (op % r.d)
     eps = 1e-4
-    det = b * b - dot(op, op) + s.sqRad
+    det = b * b - (op % op) + s.sqRad
     eps = 1e-4
     if det < 0
         return 1e20
@@ -48,15 +80,15 @@ function intersectSphere(s::Sphere, r::Ray)
     end
 end
 
-const left = newSphere(1e5,  [1e5+1, 40.8, 81.6],      [0., 0., 0.],    [.75, .25, .25],    DIFF)
-const rght = newSphere(1e5,  [-1e5+99., 40.8, 81.6],   [0., 0., 0.],    [.25, .25, .75],    DIFF)
-const back = newSphere(1e5,  [50., 40.8, 1e5],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
-const frnt = newSphere(1e5,  [50., 40.8, -1e5+170.],   [0., 0., 0.],    [0., 0., 0.],       DIFF)
-const botm = newSphere(1e5,  [50., 1e5, 81.6],         [0., 0., 0.],    [.75, .75, .75],    DIFF)
-const top  = newSphere(1e5,  [50., -1e5+81.6, 81.6],   [0., 0., 0.],    [.75, .75, .75],    DIFF)
-const mirr = newSphere(16.5, [27., 16.5, 47.],         [0., 0., 0.],    [1., 1., 1.]*.999,  SPEC)
-const glas = newSphere(16.5, [73., 16.5, 78.],         [0., 0., 0.],    [1., 1., 1.]*.999,  REFR)
-const lite = newSphere(600., [50., 681.6-.27, 81.6],   [12., 12., 12.], [0., 0., 0.],       DIFF)
+const left = newSphere(1e5,  Vec(1e5+1, 40.8, 81.6),      Vec(0., 0., 0.),    Vec(.75, .25, .25),    DIFF)
+const rght = newSphere(1e5,  Vec(-1e5+99., 40.8, 81.6),   Vec(0., 0., 0.),    Vec(.25, .25, .75),    DIFF)
+const back = newSphere(1e5,  Vec(50., 40.8, 1e5),         Vec(0., 0., 0.),    Vec(.75, .75, .75),    DIFF)
+const frnt = newSphere(1e5,  Vec(50., 40.8, -1e5+170.),   Vec(0., 0., 0.),    Vec(0., 0., 0.),       DIFF)
+const botm = newSphere(1e5,  Vec(50., 1e5, 81.6),         Vec(0., 0., 0.),    Vec(.75, .75, .75),    DIFF)
+const top  = newSphere(1e5,  Vec(50., -1e5+81.6, 81.6),   Vec(0., 0., 0.),    Vec(.75, .75, .75),    DIFF)
+const mirr = newSphere(16.5, Vec(27., 16.5, 47.),         Vec(0., 0., 0.),    Vec(1., 1., 1.)*.999,  SPEC)
+const glas = newSphere(16.5, Vec(73., 16.5, 78.),         Vec(0., 0., 0.),    Vec(1., 1., 1.)*.999,  REFR)
+const lite = newSphere(600., Vec(50., 681.6-.27, 81.6),   Vec(12., 12., 12.), Vec(0., 0., 0.),       DIFF)
 
 const spheres = [left rght back frnt botm top mirr glas lite]
 
@@ -85,7 +117,7 @@ end
 function radiance(r::Ray, depth::Int)
     obj, t = intersectSpheres(r)
     if  obj == nothing
-        return [0., 0., 0.]
+        return ZERO
     end
 
     newDepth = depth + 1
@@ -101,9 +133,8 @@ function radiance(r::Ray, depth::Int)
 
     f = (isUseRR && isRR) ? obj.cc : obj.c
     x = r.o + r.d * t
-    n = (x - obj.p)
-    n /= norm(n)
-    nl = dot(n, r.d) < 0 ? n : n * -1
+    n = norm(x - obj.p)
+    nl = (n % r.d) < 0 ? n : n * -1.
 
     if obj.refl == DIFF # Ideal DIFFUSE reflection
         r1 = 2 * pi * rand()
@@ -111,41 +142,38 @@ function radiance(r::Ray, depth::Int)
         r2s = sqrt(r2)
 
         w = nl
-        wo = w[1] < -0.1 || w[1] > 0.1 ? [0., 1., 0.] : [1., 0., 0.]
-        u = cross(wo, w)
-        u /= norm(u)
-        v = cross(w, u)
+        wo = w.x < -0.1 || w.x > 0.1 ? YAXIS : XAXIS
+        u = norm(wo ^ w)
+        v = (w ^ u)
 
-        d = u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)
-        d /= norm(d)
-        return obj.e + f .* radiance(Ray(x, d), newDepth)
+        d = norm(u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2))
+        return obj.e + f * radiance(Ray(x, d), newDepth)
     elseif obj.refl == SPEC # Ideal SPECULAR reflection
-        return obj.e + f .* radiance(Ray(x, r.d - n * (2 * dot(n, r.d))), newDepth)
+        return obj.e + f * radiance(Ray(x, r.d - n * (2. * (n % r.d))), newDepth)
     else # Ideal dielectric REFRACTION
-        reflRay = Ray(x, r.d - n * (2 * dot(n, r.d)))
-        into = dot(n, nl) > 0
+        reflRay = Ray(x, r.d - n * (2. * (n % r.d)))
+        into = (n % nl) > 0
         nc = 1.
         nt = 1.5
         nnt = into ? nc / nt : nt / nc
-        ddn = dot(r.d, nl)
+        ddn = (r.d % nl)
         cos2t = 1 - nnt * nnt * (1 - ddn * ddn)
 
         if cos2t < 0
-            return obj.e + f .* radiance(reflRay, newDepth)
+            return obj.e + f * radiance(reflRay, newDepth)
         else
-            tdir = r.d * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))
-            tdir /= norm(tdir)
+            tdir = norm(r.d * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t))))
             a = nt - nc
             b = nt + nc
             R0 = (a * a) / (b * b)
-            c = 1. - (into ? -ddn : dot(tdir, n))
+            c = 1. - (into ? -ddn : (tdir % n))
             Re = R0 + (1 - R0) * c * c * c * c * c
             Tr = 1 - Re
             P = .25 + .5 * Re
             RP = Re / P
             TP = Tr / (1. - P)
 
-            result = [0., 0., 0.]
+            result = Vec(0., 0., 0.)
             if newDepth > 2
                 if rand() < P
                     result = radiance(reflRay, newDepth) * RP
@@ -156,7 +184,7 @@ function radiance(r::Ray, depth::Int)
                 result = radiance(reflRay, newDepth) * Re + radiance(Ray(x, tdir), newDepth) * Tr
             end
 
-            return obj.e + f .* result
+            return obj.e + f * result
         end
     end
 end
@@ -166,10 +194,13 @@ function main()
     w = 256
     h = 256
     samps = 25
-    cam = Ray([50., 52., 295.6], [0., -0.042612, -1.] / norm([0., -0.042612, -1.]))
-    cx = [w * .5135 / h, 0., 0.]
-    cy = cross(cx, cam.d) / norm(cross(cx, cam.d)) * .5135
-    c = zeros(w * h, 3)
+    cam = Ray(Vec(50., 52., 295.6), norm(Vec(0., -0.042612, -1.)))
+    cx = Vec(w * .5135 / h, 0., 0.)
+    cy = norm(cx ^ cam.d) * .5135
+    c = Array{Vec}(w * h)
+    for i = 1:length(c)
+        c[i] = Vec(0., 0., 0.)
+    end
 
     # Loop over image rows
     for y = 1:h
@@ -179,7 +210,7 @@ function main()
             for sy = 1:2
                 i = (h - y) * w + x
                 for sx = 1:2
-                    r = [0., 0., 0.]
+                    r = Vec(0., 0., 0.)
                     for s = 1:samps
                         r1 = 2 * rand()
                         r2 = 2 * rand()
@@ -188,9 +219,9 @@ function main()
 
                         d = cx * (((sx-1 + .5 + dx) / 2 + x) / w - .5) +
                             cy * (((sy-1 + .5 + dy) / 2 + y) / h - .5) + cam.d
-                        r = r + radiance(Ray(cam.o + d * 140., d / norm(d)), 0) * (1. / samps)
+                        r = r + radiance(Ray(cam.o + d * 140., norm(d)), 0) * (1. / samps)
                     end
-                    c[i,:] = c[i,:] + [clip(r[1]), clip(r[2]), clip(r[3])] * .25
+                    c[i] = c[i] + Vec(clip(r.x), clip(r.y), clip(r.z)) * .25
                 end
             end
         end
@@ -198,12 +229,12 @@ function main()
 
     open("image_julia.ppm", "w") do f
         print(f, "P3\n$w $h\n255\n")
-        for i in 1:size(c, 1)
-            print(f, toInt(c[i,1]))
+        for i in 1:length(c)
+            print(f, toInt(c[i].x))
             print(f, " ")
-            print(f, toInt(c[i,2]))
+            print(f, toInt(c[i].y))
             print(f, " ")
-            print(f, toInt(c[i,3]))
+            print(f, toInt(c[i].z))
             print(f, "\n")
         end
     end
